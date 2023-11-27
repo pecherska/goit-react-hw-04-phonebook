@@ -73,12 +73,11 @@ export const App = () => {
 
         <h2>Contacts</h2>
         <Filter onChange={onChange} />
-        {!!getFilteredContacts.length && (
-          <ContactList
-            contacts={getFilteredContacts}
-            onDeleteContact={deleteContact}
-          />
-        )}
+
+        <ContactList
+          contacts={getFilteredContacts}
+          onDeleteContact={deleteContact}
+        />
       </ContainerForm>
     </>
   );
