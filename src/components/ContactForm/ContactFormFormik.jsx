@@ -1,8 +1,7 @@
 import { Formik, Form, Field, ErrorMessage } from 'formik';
-import { useFormik } from 'formik';
 
 import { nanoid } from 'nanoid';
-import { useState } from 'react';
+
 import * as yup from 'yup';
 
 const schema = yup.object().shape({
