@@ -1,92 +1,85 @@
-import { Component } from 'react';
+import { useState, useEffect } from 'react';
 import { nanoid } from 'nanoid';
-import { ContactForm } from './ContactForm/ContactForm';
-// import { ContactFormFormik } from './ContactForm/ContactFormFormik';
+// import { ContactForm } from './ContactForm/ContactForm';
+import { ContactFormFormik } from './ContactForm/ContactFormFormik';
 import ContactList from './ContactList/ContactList';
 import Filter from './Filter/Filter';
 
 import { ContainerForm, Title } from './App.styled.js';
 
-export class App extends Component {
-  state = {
-    contacts: [],
-    filter: '',
-  };
+export const App = () => {
+  const [contacts, setContacts] = useState([]);
+  const [filter, setFilter] = useState('');
 
-  componentDidMount() {
-    const contacts = localStorage.getItem('contacts');
+  useEffect(() => {
+    const parsedContacts = JSON.parse(localStorage.getItem('contacts')) || [];
+    setContacts(parsedContacts);
+  }, []);
 
-    const parsedContacts = JSON.parse(contacts);
-    if (parsedContacts) {
-      this.setState({ contacts: parsedContacts });
-    }
-  }
+  useEffect(() => {
+    localStorage.setItem('contacts', JSON.stringify(contacts));
+  }, [contacts]);
 
-  componentDidUpdate(prevState) {
-    const nextContacts = this.state.contacts;
-    const prevContacts = prevState.contacts;
+  // componentDidUpdate(prevState) {
+  //   const nextContacts = this.state.contacts;
+  //   const prevContacts = prevState.contacts;
 
-    if (nextContacts !== prevContacts) {
-      localStorage.setItem('contacts', JSON.stringify(nextContacts));
-    }
-  }
+  //   if (nextContacts !== prevContacts) {
+  //     localStorage.setItem('contacts', JSON.stringify(nextContacts));
+  //   }
+  // }
 
-  addContact = data => {
+  const addContact = data => {
+    const { name, number } = data;
+    console.log(data);
     if (
-      this.state.contacts.find(
-        contact => contact.name.toLowerCase() === data.name.toLowerCase()
+      contacts.find(
+        contact => contact.name.toLowerCase() === name.toLowerCase()
       )
     ) {
-      alert(`${data.name} is already in contacts!`);
+      alert(`${name} is already in contacts!`);
       return;
     }
 
     const newContact = {
-      ...data,
+      name,
+      number,
       id: nanoid(),
     };
-    this.setState(({ contacts }) => ({ contacts: [newContact, ...contacts] }));
-  };
-  // очікуємо id контакта який хочемо видалити. хочемо змінити стан від попереднього. потрібно видалити об'єкт з масива.
-  // беремо всі контакти, для кожного перевіряємо id, якщо contact.id не дорівняє id його повертають
-  deleteContact = id => {
-    this.setState(prevState => ({
-      contacts: prevState.contacts.filter(contact => contact.id !== id),
-    }));
-  };
-  onChange = e => {
-    this.setState({ filter: e.currentTarget.value });
+
+    setContacts(prevState => {
+      return [...prevState, newContact];
+    });
   };
 
-  getFilteredContacts = () => {
-    const { filter, contacts } = this.state;
-    const normalizedName = filter.toLowerCase();
-    return contacts.filter(contact =>
-      contact.name.toLowerCase().includes(normalizedName)
-    );
+  const deleteContact = id => {
+    setContacts(prevState => prevState.filter(contact => contact.id !== id));
+  };
+  const onChange = e => {
+    console.log(e.currentTarget.value);
+    setFilter([e.currentTarget.value]);
   };
 
-  render() {
-    const filtredContacts = this.getFilteredContacts();
-    // const filtredContacts = this.state.contacts.filter(contact =>
-    //   contact.name.toLowerCase().includes(this.state.filter.toLowerCase())
-    // );
-    return (
-      <>
-        <ContainerForm>
-          <Title>Phonebook</Title>
-          <ContactForm addContact={this.addContact} />
-          {/* <ContactFormFormik onSubmit={this.addContact}></ContactFormFormik> */}
+  const getFilteredContacts = contacts.filter(contact =>
+    contact.name.toLowerCase().includes(filter.toLowerCase())
+  );
 
-          <h2>Contacts</h2>
-          <Filter value={this.state.name} onChange={this.onChange} />
-          {/* <ContactList contacts={this.state.contacts} /> */}
+  return (
+    <>
+      <ContainerForm>
+        <Title>Phonebook</Title>
+
+        <ContactFormFormik onSubmit={addContact}></ContactFormFormik>
+
+        <h2>Contacts</h2>
+        <Filter onChange={onChange} />
+        {!!getFilteredContacts.length && (
           <ContactList
-            contacts={filtredContacts}
-            onDeleteContact={this.deleteContact}
+            contacts={getFilteredContacts}
+            onDeleteContact={deleteContact}
           />
-        </ContainerForm>
-      </>
-    );
-  }
-}
+        )}
+      </ContainerForm>
+    </>
+  );
+};

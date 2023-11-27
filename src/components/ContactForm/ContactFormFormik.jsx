@@ -1,6 +1,8 @@
 import { Formik, Form, Field, ErrorMessage } from 'formik';
+import { useFormik } from 'formik';
 
 import { nanoid } from 'nanoid';
+import { useState } from 'react';
 import * as yup from 'yup';
 
 const schema = yup.object().shape({
@@ -13,50 +15,50 @@ const schema = yup.object().shape({
 });
 
 export const ContactFormFormik = ({ onSubmit }) => {
-  const initialValues = {
-    name: '',
-    number: '',
-  };
   const nameId = nanoid();
   const numberId = nanoid();
 
-  const handelSubmit = (values, action) => {
-    onSubmit(values);
-    action.resetForm();
+  const handleSubmit = async (values, actions) => {
+    await onSubmit(values);
+    actions.setSubmitting(false);
+    actions.resetForm();
   };
-
   return (
     <Formik
-      initialValues={initialValues}
+      initialValues={{ name: '', number: '' }}
       validationSchema={schema}
-      onSubmit={handelSubmit}
+      onSubmit={handleSubmit}
     >
-      <Form>
-        <label htmlFor={nameId}>
-          Name
-          <Field
-            id={nameId}
-            type="text"
-            name="name"
-            required
-            pattern="^[a-zA-Zа-яА-Я]+(([' \-][a-zA-Zа-яА-Я ])?[a-zA-Zа-яА-Я]*)*$"
-          ></Field>
-          <ErrorMessage name="name" component="div" />
-        </label>
+      {({ isSubmitting }) => (
+        <Form>
+          <label htmlFor={nameId}>
+            Name
+            <Field
+              id={nameId}
+              type="text"
+              name="name"
+              required
+              pattern="^[a-zA-Zа-яА-Я]+(([' \-][a-zA-Zа-яА-Я ])?[a-zA-Zа-яА-Я]*)*$"
+            ></Field>
+            <ErrorMessage name="name" component="div" />
+          </label>
 
-        <label htmlFor={numberId}>
-          Number
-          <Field
-            id={numberId}
-            type="tel"
-            name="number"
-            pattern="\+?\d{1,4}?[ .\-\s]?\(?\d{1,3}?\)?[ .\-\s]?\d{1,4}[ .\-\s]?\d{1,4}[ .\-\s]?\d{1,9}"
-          ></Field>
-          <ErrorMessage name="number" component="div" />
-        </label>
+          <label htmlFor={numberId}>
+            Number
+            <Field
+              id={numberId}
+              type="tel"
+              name="number"
+              pattern="\+?\d{1,4}?[ .\-\s]?\(?\d{1,3}?\)?[ .\-\s]?\d{1,4}[ .\-\s]?\d{1,4}[ .\-\s]?\d{1,9}"
+            ></Field>
+            <ErrorMessage name="number" component="div" />
+          </label>
 
-        <button type="button">Add contact</button>
-      </Form>
+          <button type="submit" disabled={isSubmitting}>
+            Add contact
+          </button>
+        </Form>
+      )}
     </Formik>
   );
 };
